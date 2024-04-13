@@ -134,6 +134,7 @@ if not validate_reg(reg):
     print("invalid regular expression")
     exit()
 print("\n======")
+print("after adding anding the regular expression")
 regex_anded=regex_anding(reg)
 print(regex_anded)
 print("\n======")
@@ -142,6 +143,7 @@ postfix=infix_to_postfix(regex_anded)
 if postfix=="unbalanced parentheses":
     print("unbalanced parentheses")
     exit()
+print("after converting the regular expression to postfix")
 print(postfix)
 print("\n======")
 #convert the postfix to NFA
@@ -284,7 +286,9 @@ def postfix_to_nfa(postfix):
     return nfa_stack.pop(),all_states
 
 nfa,all_states=postfix_to_nfa(postfix)
+print("start state ")
 print(nfa.start.label)
+print("accept state")   
 print(nfa.accept.label)
     
     
