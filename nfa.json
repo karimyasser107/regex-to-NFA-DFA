@@ -1,8 +1,8 @@
 {
-    "startingState": "S4",
+    "startingState": "S2",
     "S0": {
         "isTerminatingState": false,
-        "a": "S1"
+        "[a-c]": "S1"
     },
     "S1": {
         "isTerminatingState": false,
@@ -19,20 +19,6 @@
         ]
     },
     "S3": {
-        "isTerminatingState": false,
-        "epsilon": [
-            "S2",
-            "S5"
-        ]
-    },
-    "S4": {
-        "isTerminatingState": false,
-        "epsilon": [
-            "S2",
-            "S5"
-        ]
-    },
-    "S5": {
         "isTerminatingState": true
     }
 }
