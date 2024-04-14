@@ -1,7 +1,7 @@
 """Convert regular expression to NFA."""
-
+import json
 #start with adding special character to represent Anding
-reg="ab(b|c)*d+"#"aa+b*b"#"(a++"
+reg="(a*)*"#"ab(b|c)*d+"#"aa+b*b"#"(a++"
     #"a|bc1+3d4(df2)(y+2)"
 
 def validate_reg(reg):
@@ -63,7 +63,14 @@ def regex_anding(reg):
         correct_reg+=reg[i+1]
     return correct_reg
 
-
+def remove_extra_anding(reg):
+    correct_regex=""
+    for i in range(0, len(reg)-1):
+        if (reg[i]=="×" and reg[i+1]==")"):
+            continue
+        correct_regex+=reg[i]
+    correct_regex+=reg[len(reg)-1]
+    return correct_regex
 
 def precedence(operator):
     if operator=="*":
@@ -128,24 +135,7 @@ def infix_to_postfix(infix):
         postfix+=stack.pop()
     return postfix
 
-#validate the regular expression
 
-if not validate_reg(reg):
-    print("invalid regular expression")
-    exit()
-print("\n======")
-print("after adding anding the regular expression")
-regex_anded=regex_anding(reg)
-print(regex_anded)
-print("\n======")
-
-postfix=infix_to_postfix(regex_anded)
-if postfix=="unbalanced parentheses":
-    print("unbalanced parentheses")
-    exit()
-print("after converting the regular expression to postfix")
-print(postfix)
-print("\n======")
 #convert the postfix to NFA
 
 class State:
@@ -159,7 +149,7 @@ class NFA:
         self.accept=accept
 def concat(nfa1:NFA,nfa2:NFA):
     #create new edge between the accept state of nfa1 and the start state of nfa2
-    nfa1.accept.epsilon_closure.add(nfa2.start)
+    nfa1.accept.epsilon_closure.add(nfa2.start.label)
     # create new nfa
     new_nfa=NFA(nfa1.start,nfa2.accept) 
     return new_nfa
@@ -170,13 +160,13 @@ def oring(nfa1:NFA,nfa2:NFA,index):
     #create new accept state
     new_accept_state=State(index+1)
     #create new edge between the new start state and the start state of nfa1
-    new_start_state.epsilon_closure.add(nfa1.start)
+    new_start_state.epsilon_closure.add(nfa1.start.label)
     #create new edge between the new start state and the start state of nfa2
-    new_start_state.epsilon_closure.add(nfa2.start)
+    new_start_state.epsilon_closure.add(nfa2.start.label)
     #create new edge between the accept state of nfa1 and the new accept state
-    nfa1.accept.epsilon_closure.add(new_accept_state)
+    nfa1.accept.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa2 and the new accept state
-    nfa2.accept.epsilon_closure.add(new_accept_state)
+    nfa2.accept.epsilon_closure.add(new_accept_state.label)
     #create new nfa
     new_nfa=NFA(new_start_state,new_accept_state)
     new_states=[new_start_state,new_accept_state]
@@ -188,13 +178,13 @@ def zero_or_more(nfa:NFA,index):
     #create new accept state
     new_accept_state=State(index+1)
     #create new edge between the new start state and the start state of nfa
-    new_start_state.epsilon_closure.add(nfa.start)
+    new_start_state.epsilon_closure.add(nfa.start.label)
     #create new edge between the new start state and the new accept state
-    new_start_state.epsilon_closure.add(new_accept_state)
+    new_start_state.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa and the new accept state
-    nfa.accept.epsilon_closure.add(new_accept_state)
+    nfa.accept.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa and the start state of nfa
-    nfa.accept.epsilon_closure.add(nfa.start)
+    nfa.accept.epsilon_closure.add(nfa.start.label)
     #create new nfa
     new_nfa=NFA(new_start_state,new_accept_state)
     new_states=[new_start_state,new_accept_state]
@@ -206,11 +196,11 @@ def one_or_more(nfa:NFA,index):
     #create new accept state
     new_accept_state=State(index+1)
     #create new edge between the new start state and the start state of nfa
-    new_start_state.epsilon_closure.add(nfa.start)
+    new_start_state.epsilon_closure.add(nfa.start.label)
     #create new edge between the accept state of nfa and the new accept state
-    nfa.accept.epsilon_closure.add(new_accept_state)
+    nfa.accept.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa and the start state of nfa
-    nfa.accept.epsilon_closure.add(nfa.start)
+    nfa.accept.epsilon_closure.add(nfa.start.label)
     #create new nfa
     new_nfa=NFA(new_start_state,new_accept_state)
     new_states=[new_start_state,new_accept_state]
@@ -222,11 +212,11 @@ def zero_or_one(nfa:NFA,index):
     #create new accept state
     new_accept_state=State(index+1)
     #create new edge between the new start state and the start state of nfa
-    new_start_state.epsilon_closure.add(nfa.start)
+    new_start_state.epsilon_closure.add(nfa.start.label)
     #create new edge between the new start state and the new accept state
-    new_start_state.epsilon_closure.add(new_accept_state)
+    new_start_state.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa and the new accept state
-    nfa.accept.epsilon_closure.add(new_accept_state)
+    nfa.accept.epsilon_closure.add(new_accept_state.label)
     #create new nfa
     new_nfa=NFA(new_start_state,new_accept_state)
     new_states=[new_start_state,new_accept_state]
@@ -238,7 +228,7 @@ def create_nfa(char,index):
     #create new accept state
     accept_state=State(index+1)
     #create new edge between the start state and the accept state
-    start_state.transitions[char]=accept_state
+    start_state.transitions[char]=accept_state.label
     #create new nfa
     new_nfa=NFA(start_state,accept_state)
     new_states=[start_state,accept_state]
@@ -285,10 +275,102 @@ def postfix_to_nfa(postfix):
             index+=2
     return nfa_stack.pop(),all_states
 
+def create_dict_for_jason(nfa,all_states):
+    nfa_dict=dict()
+    nfa_dict["startingState"]="S"+str(nfa.start.label)
+    for state in all_states:
+        #the state info to be added must be like that
+        #"S0": { "isTerminatingState": true, "a": "S0", "b": "S1"}
+        #where a, b are the transitions 
+        state_info=dict()
+        
+        if state==nfa.accept:
+            state_info["isTerminatingState"]=True
+        else:
+            state_info["isTerminatingState"]=False
+        for char in state.transitions:
+            state_info[char]="S"+str(state.transitions[char])
+        
+        if len(state.epsilon_closure)>0:
+            state_info["epsilon"]=[]
+            for epsilon_state in state.epsilon_closure:
+                state_info["epsilon"].append("S"+str(epsilon_state))
+        nfa_dict["S"+str(state.label)]=state_info
+
+    return nfa_dict
+
+def create_json(nfa_dict):  
+    with open("nfa.json","w") as file:
+        json.dump(nfa_dict,file,indent=4)
+    print("json file created successfully")
+    
+# Draw the NFA graph using Graphviz
+import graphviz
+
+def draw_nfa(json_filename):
+    # Load the NFA data from the JSON file
+    with open(json_filename, 'r') as json_file:
+        nfa_data = json.load(json_file)
+
+    # Create a new Graphviz graph
+    graph = graphviz.Digraph(format='png')
+
+    # Add nodes for each state
+    for state, state_data in nfa_data.items():
+        if state == 'startingState':
+            continue
+        else:
+            graph.node(state, label=state, shape='doublecircle' if state_data['isTerminatingState'] else 'circle')
+
+    # Add edges for transitions
+    for state, state_data in nfa_data.items():
+        if state != 'startingState':
+            for symbol, next_state in state_data.items():
+                if symbol not in ['isTerminatingState', 'epsilon']:
+                    graph.edge(state, next_state, label=symbol)
+            for epsilon_move in state_data.get('epsilon', []):
+                graph.edge(state, epsilon_move, label='ε')
+
+    # Save the graph to a file
+    graph.render('nfa_graph', format='png', cleanup=True)
+
+    print("NFA graph generated successfully.")
+    
+
+
+
+#validate the regular expression
+if not validate_reg(reg):
+    print("invalid regular expression")
+    exit()
+print("\n======")
+print("after adding anding the regular expression")
+regex_anded=regex_anding(reg)
+print(regex_anded)
+print("\n======")
+print("after removing extra anding")
+correct_regex=remove_extra_anding(regex_anded)
+print(correct_regex)
+print("\n======")
+postfix=infix_to_postfix(correct_regex)
+if postfix=="unbalanced parentheses":
+    print("unbalanced parentheses")
+    exit()
+print("after converting the regular expression to postfix")
+print(postfix)
+print("\n======")
+
 nfa,all_states=postfix_to_nfa(postfix)
 print("start state ")
 print(nfa.start.label)
 print("accept state")   
 print(nfa.accept.label)
+print("\n======")
+nfa_dict=create_dict_for_jason(nfa,all_states)
+print("NFA in json format")
+print(nfa_dict)
+create_json(nfa_dict)
+# Example usage
+draw_nfa("nfa.json")
     
     
