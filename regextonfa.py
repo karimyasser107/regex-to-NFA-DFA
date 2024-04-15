@@ -255,7 +255,7 @@ def zero_or_more(nfa:NFA,index):
     #create new edge between the accept state of nfa and the new accept state
     nfa.accept.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa and the start state of nfa
-    nfa.accept.epsilon_closure.add(nfa.start.label)
+    nfa.accept.epsilon_closure.add(new_start_state.label)#(nfa.start.label)
     #create new nfa
     new_nfa=NFA(new_start_state,new_accept_state)
     new_states=[new_start_state,new_accept_state]
@@ -271,7 +271,7 @@ def one_or_more(nfa:NFA,index):
     #create new edge between the accept state of nfa and the new accept state
     nfa.accept.epsilon_closure.add(new_accept_state.label)
     #create new edge between the accept state of nfa and the start state of nfa
-    nfa.accept.epsilon_closure.add(nfa.start.label)
+    nfa.accept.epsilon_closure.add(new_start_state.label)#(nfa.start.label)
     #create new nfa
     new_nfa=NFA(new_start_state,new_accept_state)
     new_states=[new_start_state,new_accept_state]
@@ -416,7 +416,7 @@ def draw_nfa(json_filename):
     
 
 
-reg="[a-c]*"#"(a+a+)+b" #"(a*b*)([a-b]*)"#"(a*)*"#"(a*b)(b?a+)" "(a*?)*" #"([)" #"[a-z_][a-z0-9_]*[!?]?" #"(a|b)*bc+" #"((00)|1)*1(0|1)" #"(a*)*" #"ab(b|c)*d+" #"aa+b*b" #"(a++"
+reg="(a*b)(b?a+)"#"(a*?)*"#"(a*)*"#"(a|b)*a[ab]?"#"(a+a+)+b"#"(a*b*)([a-b]*)"##"[a-c]*" #"(a*b)(b?a+)"  #"([)" #"[a-z_][a-z0-9_]*[!?]?" #"(a|b)*bc+" #"((00)|1)*1(0|1)" #"(a*)*" #"ab(b|c)*d+" #"aa+b*b" #"(a++"
     #"a|bc1+3d4(df2)(y+2)"
 #validate the regular expression
 if not validate_reg(reg):
