@@ -27,7 +27,7 @@ def validate_reg(reg):
             #example "a?*" is invalid
             return False
         if reg[i]=="|" :
-            if reg[i+1]=="*" or reg[i]=="?" or reg[i+1]=="+":
+            if reg[i+1]=="*" or reg[i]=="?" or reg[i+1]=="+" or reg[i+1]==")" or reg[i+1]=="]":
                 #example "a|b|+c" or "a|b|+*" is invalid
                 return False
         
@@ -36,7 +36,7 @@ def validate_reg(reg):
                 continue
             return False
         if reg[i]=="[":
-            if reg[i+1]=="]":#[] invalid
+            if reg[i+1]=="]" or reg[i+1]=="|":#[] invalid
                 return False
     return True
 def validate_brackets(reg):
@@ -143,6 +143,12 @@ def concat_range(correct_reg):
             continue
         if is_range:
             range_str="["+correct_reg[i]+"]"
+            # check that something like [a-c-f] does not exist 
+            # so check that the distance between the two "-" is 2 at least. so [a-ce-k] is valid
+            indices_of_a = [p for p, char in enumerate(correct_reg[i]) if char == "-"]
+            for j in range(0,len(indices_of_a)-1):
+                if indices_of_a[j+1]-indices_of_a[j]<3:
+                    return ["%"]#just to mark that the regular expression is invalid
             if correct_reg[i+1]!="]":
                 return ["%"]#just to mark that the regular expression is invalid
             reg.append(range_str)
@@ -416,7 +422,7 @@ def draw_nfa(json_filename):
     
 
 
-reg="(a*b)(b?a+)"#"(a*?)*"#"(a*)*"#"(a|b)*a[ab]?"#"(a+a+)+b"#"(a*b*)([a-b]*)"##"[a-c]*" #"(a*b)(b?a+)"  #"([)" #"[a-z_][a-z0-9_]*[!?]?" #"(a|b)*bc+" #"((00)|1)*1(0|1)" #"(a*)*" #"ab(b|c)*d+" #"aa+b*b" #"(a++"
+reg="a|s+t?[a-ce-r]"#"(a*b)(b?a+)"#"(a*?)*"#"(a*)*"#"(a|b)*a[ab]?"#"(a+a+)+b"#"(a*b*)([a-b]*)"##"[a-c]*" #"(a*b)(b?a+)"  #"([)" #"[a-z_][a-z0-9_]*[!?]?" #"(a|b)*bc+" #"((00)|1)*1(0|1)" #"(a*)*" #"ab(b|c)*d+" #"aa+b*b" #"(a++"
     #"a|bc1+3d4(df2)(y+2)"
 #validate the regular expression
 if not validate_reg(reg):
@@ -458,7 +464,7 @@ print(nfa.accept.label)
 print("\n======")
 nfa_dict=create_dict_for_jason(nfa,all_states)
 print("NFA in json format")
-print(nfa_dict)
+# print(nfa_dict)
 create_json(nfa_dict)
 # Example usage
 draw_nfa("nfa.json")
