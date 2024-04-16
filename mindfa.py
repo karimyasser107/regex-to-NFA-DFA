@@ -5,7 +5,6 @@ from automathon import DFA
 
 
 def DFADrawer(DFADiagram, alphabet, drawingName="DFA"):
-    print("MinimizedDFA",DFADiagram)
     # Extract states
     states = set(DFADiagram.keys()) - {'startingState'}
     # Extract initial state
@@ -69,7 +68,6 @@ def epsilonClosure(state, allStates):
 def move(state, char, allStates):
 
     stateList = []  # List to store states reached by the move operation
-    print('state is: ', state)  # Print the current state
     
     # Loop through the state's key-value pairs
     for key, value in state.items():
@@ -78,7 +76,6 @@ def move(state, char, allStates):
             continue
         
         # Check if the input character leads to any next states
-        print(value)
         if char in value:
             nextState = value[char]
             for i in nextState:
@@ -105,12 +102,11 @@ def stateMaker(states, alphabet):
     return new_state
 
 
-def makeDFA(states):
+def DFAMaker(states):
  
     queue = Queue(maxsize=0)  # Queue for state exploration
     queue.put(states[0])  # Add starting state to the queue
 
-    print('states is: ', states)  # Print the initial big state list
 
     # Explore states in the DFA
     while not queue.empty():
@@ -122,7 +118,7 @@ def makeDFA(states):
 
             # Compute the move operation for each state in the current big state
             for state in curr_state_list:
-                new_states = move(state, char, allStates)
+                new_states = move(state, char, statesOfAllTime)
                 new_state_list.extend([new_state for new_state in new_states if new_state not in new_state_list])
 
             # Create a new big state from the list of reached states
@@ -147,7 +143,6 @@ def makeDFA(states):
             # Add the new big state to the big state list if it doesn't already exist
             if not state_exists:
                 states.append(new_state_list)
-                print('new_state_list is: ', new_state_list)
                 queue.put(new_state_list)
             
             
@@ -165,7 +160,6 @@ def format_dfa(big_state_list):
 
     # Mark terminal states
     for state in big_state_list:
-        print("state['stateList']", state['stateList'])
         is_terminal = any(v['isTerminatingState']  for s in state['stateList'] for k, v in s.items())
         state['isTerminatingState'] = is_terminal
 
@@ -245,28 +239,41 @@ def check_other_group_members(new_state_group, state_group, current_state_groups
 
 
 def check_other_groups(state, original_state_group, current_state_groups, alphabet):
-
     for state_group in current_state_groups:
+        # Skip the original state group
         if state_group == original_state_group:
             continue
 
         # Take any state from the group
         if len(state_group["states"]) == 0:
             continue
+        
         the_other_state = state_group["states"][0]
         flag = True
+
+        # Check if the current state and any state from the other group have the same transitions
         for char in alphabet:
             new_state = get_new_state(state, char)
             the_other_state_new_state = get_new_state(the_other_state, char)
-
-            if new_state != the_other_state_new_state:
+           
+            
+            if state != None and  list(state.values())[0]["isTerminatingState"] :
+                    flag = False
+                    break
+            if the_other_state != None and  list(the_other_state.values())[0]["isTerminatingState"] :
+                    flag = False
+                    break
+            if new_state != the_other_state_new_state :
                 flag = False
                 break
 
+        # If all transitions match, return the other state group
         if flag:
             return state_group
 
+    # If no matching state group is found, return None
     return None
+
 def minDFA(state_groups, alphabet):
 
     old_state_group_size = -1
@@ -295,6 +302,8 @@ def minDFA(state_groups, alphabet):
                 for char in alphabet:
                     # Get the new state resulting from the transition on the current character
                     new_state = get_new_state(state, char)
+                    if new_state is None and not list(state.values())[0]["isTerminatingState"]:
+                        continue
                     # Get the state group of the new state
                     new_state_group = get_state_group(new_state, state_groups)
                     # If the new state group is different from the current state group, check for equivalence
@@ -322,13 +331,16 @@ def minDFA(state_groups, alphabet):
 
 
 def format_minimised_dfa(minimised_dfa, alphabet):
+
     # Name all the state groups
     for i, state_group in enumerate(minimised_dfa):
         state_group["stateGroupName"] = 'S' + str(i)
 
     final_states_dict = {}
+    # Create a dictionary to store the formatted states
     for state_group in minimised_dfa:
         final_state_form = {}
+        # Format each state in the state group
         for state in state_group["states"]:
             state_info = list(state.values())[0]
             for k, v in state_info.items():
@@ -338,6 +350,7 @@ def format_minimised_dfa(minimised_dfa, alphabet):
                     final_state_form["isTerminatingState"] = v
 
         new_name = state_group["stateGroupName"]
+        # Format transitions for each character in the alphabet
         for char in alphabet:
             first_state = list(state_group["states"][0].values())[0]
             if char not in first_state.keys():
@@ -351,62 +364,52 @@ def format_minimised_dfa(minimised_dfa, alphabet):
         final_states_dict[new_name] = final_state_form
 
     very_final_state = {}
-    print("final_states_dict ",final_states_dict)
+    # Create a dictionary to store the final formatted DFA
     for name, state_info in final_states_dict.items():
         if 'isStartingState' in state_info.keys():
             very_final_state['startingState'] = name
             break
     very_final_state.update(final_states_dict)
-    
-    # Print the formatted DFA for debugging
-    print('Printing the formatted DFA:')
-    for name, state_info in very_final_state.items():
-        print(name, state_info)
-
     return very_final_state
 
 
 
 
 
-allStates =None
+statesOfAllTime =None
 
 with open("NFA.json", "r") as inputFile:
-   allStates= json.load(inputFile)
+   statesOfAllTime= json.load(inputFile)
 alphabet= set()
 
 # get alphabet
-for state in allStates:
+for state in statesOfAllTime:
     if state != 'startingState':
-        for key, value in allStates[state].items():
+        for key, value in statesOfAllTime[state].items():
             if key != 'isTerminatingState':
                  if type(value) != list:
                      value = [value]
-                     allStates[state][key] = value
+                     statesOfAllTime[state][key] = value
             if key != 'isTerminatingState' and key != 'epsilon':
                     alphabet.add(key)
 
 
-print('alphabet is: ', alphabet)    
 #part2 main
 DFADiagram = dict()
-startingState = allStates.get("startingState")
+startingState = statesOfAllTime.get("startingState")
 
 # get epsilon closure of starting state
 initState = epsilonClosure(
-    {startingState: allStates.get(startingState)}, allStates)
-initState = stateMaker(initState, alphabet) #TODO: check if this is correct
+    {startingState: statesOfAllTime.get(startingState)}, statesOfAllTime)
+initState = stateMaker(initState, alphabet) # make a initial state
 # initState by this point contains the big State
 initState["isStartingState"] = True
 bigStateList = [initState]
 
-makeDFA(bigStateList)
+DFAMaker(bigStateList)
 DFADiagram = format_dfa(bigStateList)
 DFADrawer(DFADiagram, alphabet, "DFA")
 
-print('printing after DFA Formatter: ')
-for key, value in DFADiagram.items():
-    print(key, value)
 
 
 # let state group be of form {states: {{S1:bla bla}, {S2:bla bla}}, stateNames: ["S1", "S2"]}
@@ -434,16 +437,14 @@ elif (len(TerminalStates["stateNames"]) == 0):
     StateGroups = [nonTerminalStates]
 elif (len(TerminalStates["stateNames"]) != 0 and len(nonTerminalStates["stateNames"]) != 0):
     StateGroups = [nonTerminalStates, TerminalStates]
-
+print(StateGroups)
 
 minimisedDFA = minDFA(StateGroups, alphabet)
 
-print('printing minimised DFA: ', minimisedDFA)
 
 format_minDFA = format_minimised_dfa(minimisedDFA, alphabet)
 
-for state in format_minDFA:
-    print(state)
+
 with open("MinimizedDFA.json", "w") as outfile:
     json.dump(format_minDFA, outfile, indent=4)
 DFADrawer(format_minDFA, alphabet, "MinimizedDFA")

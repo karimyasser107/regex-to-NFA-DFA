@@ -160,7 +160,7 @@ class NFA:
 def concat(nfa1:NFA,nfa2:NFA):
     #create new edge between the accept state of nfa1 and the start state of nfa2
     nfa1.accept.epsilon_closure.add(nfa2.start)
-    # create new nfa
+    # create new nfaf
     new_nfa=NFA(nfa1.start,nfa2.accept) 
     return new_nfa
 
