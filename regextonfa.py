@@ -84,7 +84,10 @@ def regex_anding(reg):
                 range_str+=reg[i]
                 continue
         if reg[i]=="|" or reg[i+1]=="|":
-            correct_reg.append(reg[i])
+            if not first_is_operator_and_already_put:
+                correct_reg.append(reg[i])
+            else:
+                first_is_operator_and_already_put=False
             continue
         elif reg[i+1]=="?" or reg[i+1]=="*" or reg[i+1]=="+":
             if not first_is_operator_and_already_put:
@@ -422,7 +425,7 @@ def draw_nfa(json_filename):
     
 
 
-reg="a|s+t?[a-ce-r]"#"(a*b)(b?a+)"#"(a*?)*"#"(a*)*"#"(a|b)*a[ab]?"#"(a+a+)+b"#"(a*b*)([a-b]*)"##"[a-c]*" #"(a*b)(b?a+)"  #"([)" #"[a-z_][a-z0-9_]*[!?]?" #"(a|b)*bc+" #"((00)|1)*1(0|1)" #"(a*)*" #"ab(b|c)*d+" #"aa+b*b" #"(a++"
+reg="a+|b+"#"(a*b)(b?a+)"#"(a*?)*"#"(a*)*"#"(a|b)*a[ab]?"#"(a+a+)+b"#"(a*b*)([a-b]*)"##"[a-c]*" #"(a*b)(b?a+)"  #"([)" #"[a-z_][a-z0-9_]*[!?]?" #"(a|b)*bc+" #"((00)|1)*1(0|1)" #"(a*)*" #"ab(b|c)*d+" #"aa+b*b" #"(a++"
     #"a|bc1+3d4(df2)(y+2)"
 #validate the regular expression
 if not validate_reg(reg):
