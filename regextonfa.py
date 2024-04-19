@@ -28,7 +28,7 @@ def validate_reg(reg):
             return False
         if reg[i]=="|" :
             if reg[i+1]=="*" or reg[i]=="?" or reg[i+1]=="+" or reg[i+1]==")" or reg[i+1]=="]":
-                #example "a|b|+c" or "a|b|+*" is invalid
+                #example "a|b|+c" or "a|b|+*" or "a|]" or "(|m" is invalid
                 return False
         
         if reg[i]=="-":#TODO checkkkkk if all alphanumeric
