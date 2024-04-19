@@ -229,8 +229,13 @@ class NFA:
         self.accept=accept
 def concat(nfa1:NFA,nfa2:NFA):
     #create new edge between the accept state of nfa1 and the start state of nfa2
+<<<<<<< HEAD
+    nfa1.accept.epsilon_closure.add(nfa2.start)
+    # create new nfaf
+=======
     nfa1.accept.epsilon_closure.add(nfa2.start.label)
     # create new nfa
+>>>>>>> c08f1c87f6b053854d73a09a9f842fc069a574a2
     new_nfa=NFA(nfa1.start,nfa2.accept) 
     return new_nfa
 

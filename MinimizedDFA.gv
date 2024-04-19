@@ -1,0 +1,9 @@
+digraph MinimizedDFA {
+	graph [rankdir=LR]
+	"" [label="" shape=plaintext]
+	S1 [label=S1 shape=doublecircle]
+	S0 [label=S0 shape=circle]
+	"" -> S0 [label=""]
+	S0 -> S0 [label=a]
+	S0 -> S1 [label=b]
+}
